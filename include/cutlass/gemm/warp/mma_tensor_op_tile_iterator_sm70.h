@@ -317,8 +317,9 @@ public:
         int access_idx = c + s * Policy::LdsIterations::kContiguous;
 
         AccessType const *source_ptr = pointer_[s & 1] +
-          Policy::LdsShape::kContiguous * c +
-          Policy::LdsShape::kStrided * (s / 2) * stride_;
+          Policy::LdsShape::kContiguous * c + 
+          (s / 2) * (2 * Policy::LdsShape::kContiguous / Layout::kElementsPerAccess);
+          // Policy::LdsShape::kStrided * (s / 2) * stride_;
 
         char const *source_byte_ptr = reinterpret_cast<char const *>(source_ptr) + byte_offset + byte_offset_;
         fetch_ptr[access_idx] = *(reinterpret_cast<AccessType const*> (source_byte_ptr));

@@ -1875,9 +1875,15 @@ public:
 
             if (divisible_ || 
               (access_coord.row() < extent_.row() && access_coord.column() < extent_.column())) {
-
-              access_ptr[access_idx] = *reinterpret_cast<AccessType const *>(
-                ref_.data() + ref_.offset(offset));
+              if (std::is_same<Layout, cutlass::layout::ColumnMajor>::value) {
+                CUTLASS_PRAGMA_UNROLL
+                for (int i = 0; i < kElementsPerAccess; i++) {
+                  access_ptr[access_idx][i] = *(ref_.data() + ref_.offset(offset) + ref_.stride(0) * i);
+                }
+              } else {
+                access_ptr[access_idx] = *reinterpret_cast<AccessType const *>(
+                  ref_.data() + ref_.offset(offset));
+              }
             }
             else {
               AccessType zero;
@@ -1904,9 +1910,15 @@ public:
 
           if (divisible_ ||
             (access_coord.row() < extent_.row() && access_coord.column() < extent_.column())) {
-              
-            access_ptr[access_idx] = *reinterpret_cast<AccessType const *>(
-              ref_.data() + ref_.offset(offset));
+              if (std::is_same<Layout, cutlass::layout::RowMajor>::value) {
+                CUTLASS_PRAGMA_UNROLL
+                for (int i = 0; i < kElementsPerAccess; i++) {
+                  access_ptr[access_idx][i] = *(ref_.data() + ref_.offset(offset) + ref_.stride(0) * i);
+                }
+              } else {
+                access_ptr[access_idx] = *reinterpret_cast<AccessType const *>(
+                  ref_.data() + ref_.offset(offset));
+              }
           }
           else {
               AccessType zero;

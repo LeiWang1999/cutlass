@@ -321,6 +321,22 @@ public:
         }
       }
       contiguous_offset = (tile_offset.contiguous() >> 1) << 1;
+    } else if (Policy::LdsmIterations::kContiguous % kPointerCount != 0) {
+      int step = tile_offset.contiguous() * Policy::LdsmIterations::kContiguous;
+      int pointer_offset = step % kPointerCount;
+      if (pointer_offset != 0) {
+        AccessType const *tmp_pointer[kPointerCount];
+        CUTLASS_PRAGMA_UNROLL
+        for (int i = 0; i < kPointerCount; ++i) {
+          tmp_pointer[i] = pointer_[i];
+        }
+        CUTLASS_PRAGMA_UNROLL
+        for (int i = 0; i < kPointerCount; ++i) {
+          int offset = (i + step) / kPointerCount * Layout::TileShape::kContiguous;
+          pointer_[i] = tmp_pointer[(i + pointer_offset + kPointerCount) % kPointerCount] + offset;
+        }
+        contiguous_offset = 0;
+      }
     }
 
     int offset = (tile_offset.strided() * InstructionShape::kStrided) *
